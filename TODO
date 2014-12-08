@@ -13,4 +13,5 @@
 	> event(title, message, alertType)
 	> event(title, message, hostname)
 	> event(title, message, tags)
-	
+> Prepare for submission to maven central
+> Prepare for submission to datadoghq library page
