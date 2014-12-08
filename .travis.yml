@@ -1,0 +1,11 @@
+language: java
+
+notifications:
+    email:
+        - arnab@ranartech.com
+branches:
+    only:
+        - master
+
+script: mvn clean package
+
