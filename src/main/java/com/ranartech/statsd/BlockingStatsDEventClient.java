@@ -41,6 +41,7 @@ public class BlockingStatsDEventClient  {
     protected final DatagramSocket clientSocket;
     protected final StatsDClientErrorHandler handler;
     protected final String[] constantTags;
+    protected final String hostname;
 
     /**
      * Create a new StatsD client communicating with a StatsD instance on the
@@ -78,7 +79,7 @@ public class BlockingStatsDEventClient  {
      * @param port
      *     the port of the targeted StatsD server
      * @param constantTags
-     *     tags to be added to all content sent
+     *     tags to be added to all content sent (each of them should be in the format key:value)
      * @throws StatsDClientException
      *     if the client could not be started
      */
@@ -104,7 +105,7 @@ public class BlockingStatsDEventClient  {
      * @param port
      *     the port of the targeted StatsD server
      * @param constantTags
-     *     tags to be added to all content sent
+     *     tags to be added to all content sent (each of them should be in the format key:value)
      * @param errorHandler
      *     handler to use when an exception occurs during usage
      * @throws StatsDClientException
@@ -112,6 +113,7 @@ public class BlockingStatsDEventClient  {
      */
     public BlockingStatsDEventClient(String hostname, int port, String[] constantTags, StatsDClientErrorHandler errorHandler) throws StatsDClientException {
         this.handler = errorHandler;
+        this.hostname = hostname;
         if(constantTags != null && constantTags.length == 0) {
             constantTags = null;
         }
@@ -140,7 +142,7 @@ public class BlockingStatsDEventClient  {
     /**
      * Generate a suffix conveying the given tag list to the client
      */
-    String tagString(String[] tags) {
+    protected String tagString(String[] tags) {
         boolean have_call_tags = (tags != null && tags.length > 0);
         boolean have_constant_tags = (constantTags != null && constantTags.length > 0);
         if(!have_call_tags && !have_constant_tags) {
@@ -167,33 +169,101 @@ public class BlockingStatsDEventClient  {
     }
 
     /**
+     * Submit event with title and message
+     * @param title
+     * @param message
+     */
+    public void event( String title, String message ) {
+    	event( title, message, 0, null, null, null, null, null, null);
+    }
+    
+    /**
+     * Submit event with title, message and a time
+     * @param title
+     * @param message
+     * @param dateHappened - It should be in seconds
+     */
+    public void event( String title, String message, long dateHappened ) {
+    	event( title, message, dateHappened, null, null, null, null, (String[])null);
+    }
+    
+    /**
+     * Submit event with title, message and priority for the message
+     * @param title
+     * @param message
+     * @param priority
+     */
+    public void event( String title, String message, Priority priority ) {
+    	event( title, message, 0L, null, priority, null, null, (String[])null);
+    }
+    
+    /**
+     * Submit event with title, message and alter type
+     * @param title
+     * @param message
+     * @param alertType
+     */
+    public void event( String title, String message, AlertType alertType ) {
+    	event( title, message, 0, null, null, null, alertType, (String[])null);
+    }
+    
+    /**
+     * Submit message with title, message and tags
+     * @param title
+     * @param message
+     * @param tags
+     */
+    public void event( String title, String message, String... tags ) {
+    	event( title, message, 0L, null, null, null, null, tags);
+    }
+    
+    /**
      * 
      * Reports an event to the datadog agent
      * 
      * @param title
      * @param message
      * @param dateHappened
-     * @param hostname
      * @param aggregationKey
      * @param priority
      * @param sourceTypeName
      * @param alterType
-     * @param tags
+     * @param tags -> Each item in this array should in the format key:value
      */
-    public void errorEvent(final String title, final String message, final long dateHappened, final String hostname, final String aggregationKey, 
-			final Priority priority, final String sourceTypeName, final AlterType alterType, final String... tags) {
+    public void event(String title, String message, long dateHappened, String aggregationKey, 
+			Priority priority, String sourceTypeName, AlertType alterType, String... tags) {
     	if (title != null && message != null) {
-	    	blockingSend(prepareMessage(title, message, dateHappened, hostname, aggregationKey, priority, sourceTypeName, alterType, tagString(tags)));
+	    	blockingSend(prepareMessage(title, message, dateHappened, aggregationKey, priority, sourceTypeName, alterType, tagString(tags)));
     	}
     }
     
-    protected String prepareMessage(final String title, final String message, final long dateHappened, final String hostname, final String aggregationKey, 
-			final Priority priority, final String sourceTypeName, final AlterType alterType, final String... tags) {
-    	return String.format("_e{%d,%d}:%s|%s|d:%d|h:%s|k:%s|p:%s|s:%s|t:%s%s", 
-    			title.length(), message.length(), title, message, dateHappened, hostname, aggregationKey, priority.name(), sourceTypeName, alterType.name(), tagString(tags));
+    protected String prepareMessage(String title, String message, long dateHappened, String aggregationKey, 
+			Priority priority, String sourceTypeName, AlertType alterType, String... tags) {
+    	StringBuilder sb = new StringBuilder();
+    	sb.append(String.format("_e{%d,%d}:%s|%s", title, message));
+    	if (dateHappened > 0) {
+    		sb.append(String.format("|d:%d", dateHappened));
+    	}
+    	if (hostname != null) {
+    		sb.append(String.format("|h:%s", hostname));
+    	}
+    	if (aggregationKey != null) {
+    		sb.append(String.format("|k:%s", aggregationKey));
+    	}
+    	if (priority != null) {
+    		sb.append(String.format("|p:%s", priority.name()));
+    	}
+    	if (sourceTypeName != null) {
+    		sb.append(String.format("|s:%s", sourceTypeName));
+    	}
+    	if (alterType != null) {
+    		sb.append(String.format("|t:%s", alterType.name()));
+    	}
+    	sb.append(tagString(tags));
+    	return sb.toString();
     }
 
-    private void blockingSend(String message) {
+    protected void blockingSend(String message) {
         try {
             final byte[] sendData = message.getBytes();
             final DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length);

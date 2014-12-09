@@ -4,7 +4,7 @@ package com.ranartech.statsd;
  * @author arnab
  *
  */
-public enum AlterType {
+public enum AlertType {
 
 	error, warming, info, success;
 	

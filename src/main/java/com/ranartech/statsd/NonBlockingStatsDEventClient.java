@@ -1,7 +1,9 @@
 package com.ranartech.statsd;
 
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +28,8 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
             return result;
         }
     });
+    
+    private BlockingQueue<EventMessage> blockingQueue = new LinkedBlockingDeque<EventMessage>();
 
     /**
      * Create a new StatsD client communicating with a StatsD instance on the
@@ -63,7 +67,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      * @param port
      *     the port of the targeted StatsD server
      * @param constantTags
-     *     tags to be added to all content sent
+     *     tags to be added to all content sent (each of them should be in the format key:value)
      * @throws StatsDClientException
      *     if the client could not be started
      */
@@ -89,7 +93,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      * @param port
      *     the port of the targeted StatsD server
      * @param constantTags
-     *     tags to be added to all content sent
+     *     tags to be added to all content sent (each of them should be in the format key:value)
      * @param errorHandler
      *     handler to use when an exception occurs during usage
      * @throws StatsDClientException
@@ -97,6 +101,27 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      */
     public NonBlockingStatsDEventClient(String hostname, int port, String[] constantTags, StatsDClientErrorHandler errorHandler) throws StatsDClientException {
         super(hostname, port, constantTags, errorHandler);
+        executor.execute(new Runnable() {
+			
+			@Override
+			public void run() {
+				while (!executor.isShutdown()) {
+					try {
+						EventMessage eMsg = blockingQueue.poll(1, TimeUnit.SECONDS);
+						if (eMsg != null) {
+							blockingSend(
+								prepareMessage(
+										eMsg.getTitle(), eMsg.getMessage(), 
+										eMsg.getDateHappened(), eMsg.getAggregationKey(), 
+										eMsg.getPriority(), eMsg.getSourceTypeName(), 
+										eMsg.getAlterType(), tagString(eMsg.getTags())));
+						}
+					} catch (Exception e) {
+						handler.handle(e);
+					}
+				}
+			}
+		});
     }
 
     /**
@@ -117,27 +142,31 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
     }
 
     /**
-     * Adjusts the specified counter by a given delta.
+     * 
+     * Reports an event to the datadog agent (non-blocking)
+     * 
      * @param title
      * @param message
-     * @param tags
+     * @param dateHappened
+     * @param aggregationKey
+     * @param priority
+     * @param sourceTypeName
+     * @param alterType
+     * @param tags -> Each item in this array should in the format key:value
      */
     @Override
-    public void errorEvent(final String title, final String message, final long dateHappened, final String hostname, final String aggregationKey, 
-    					final Priority priority, final String sourceTypeName, final AlterType alterType, final String... tags) {
+    public void event(final String title, final String message, final long dateHappened, final String aggregationKey, 
+    		final Priority priority, final String sourceTypeName, final AlertType alterType, final String... tags) {
     	if (title != null && message != null) {
-    		try {
-                executor.execute(new Runnable() {
-                    @Override public void run() {
-            	    	NonBlockingStatsDEventClient.super.errorEvent(title, message, dateHappened, hostname, aggregationKey, priority, sourceTypeName, alterType, tagString(tags));
-                    }
-                });
-            }
-            catch (Exception e) {
-                handler.handle(e);
-            }
+    		final EventMessage eMsg = new EventMessage(title, message);
+    		eMsg.setDateHappened(dateHappened);
+    		eMsg.setAggregationKey(aggregationKey);
+    		eMsg.setAlterType(alterType);
+    		eMsg.setPriority(priority);
+    		eMsg.setSourceTypeName(sourceTypeName);
+    		eMsg.setTags(tags);
+    		blockingQueue.offer(eMsg);
     	}
     }
-
+    
 }
-

@@ -1,16 +1,9 @@
-> Fix README.md documentation
-> Write test classes for 
-	> BlockingStatsDEventClient
-	> NonBlockingStatsDEventClient
-	> BlockingStatsDClient
 > Test existing test classes. They are throwing error in test mode
-> Write test code which posts some dummy messages to chartreport.binary.com. Remove this code later
+> Write test classes for com.ranartech.statsd package
 > Update documentation of NonBlockingStatsDEventClient with threading and non-blocking details
-> Create several utility methods like
-	> event(title, message)
-	> event(title, message, dateHappened)
-	> event(title, message, priority)
-	> event(title, message, alertType)
-	> event(title, message, hostname)
-	> event(title, message, tags)
-	
+> Write test code which posts some dummy messages to chartreport.binary.com. Remove this code later
+> Fix README.md documentation
+> Prepare the project for maven distribution
+> Write a blog @ techblog.ranartech.com
+> Submit the project details to datadoghq
+> Delete this file
