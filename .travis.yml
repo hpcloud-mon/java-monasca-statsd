@@ -1,11 +1,22 @@
 language: java
-
 notifications:
-    email:
-        - arnab@ranartech.com
+  email:
+  - arnab.k@gmail.com
 branches:
-    only:
-        - master
-
-script: mvn clean package
-
+  only:
+  - master
+before_install:
+- sudo apt-get install gnupg
+- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in secring.gpg.enc -out local.secring.gpg
+  -d
+- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in pubring.gpg.enc -out local.pubring.gpg
+  -d
+- cp local.secring.gpg ~/.gnupg/secring.gpg
+- cp local.pubring.gpg ~/.gnupg/pubring.gpg
+script: mvn clean deploy --settings maven_settings.xml
+env:
+  global:
+  - secure: plJ9DDupTUcpMl0O5ORdQAcSgW5Q3QRwyO5lBJOuXVuT9w2e+/2uegZRMMaMvxcd/YvQa3M7UqScCp8xnD0oVjvpRkg33NP4K7YY74FWa0tdLyWKGaIpnu78B19Ju7a283/hIvhkb5Ww8/Hk1w5EMRhdsMBOCFlhIGTTRhf2NMU=
+  - secure: GjoaZ24nkDTkgnBmFh+Jsp9htN6wl6t5kojnmpC0wi2KaUB/UkgpU6QY1QlsEQEteTeYK3GveI2FO16orThv3SNxuHJiYMXfKuOu9oxX5a9vdwiNrA234GmR4iCgAij+OAxc3IvYaclhqvpv/p+Ekke0O0KMFd4AjKnDO96967E=
+  - secure: oa1wzEtrPEvMmwA6eT5wgqew+xP3FkJ4uZ0U/Yv7W4kl9UjXR4X5TenwTysLpi6ckpcheDT779AxwXez8Y8zIs6e9m++XelW3hFU5HV5BnkJunoyI+iREWKHAizziwyn0PY33HamoF+mPm4BG/1BMNV9mX1jeXB3Q4MQfKsYRn8=
+  - secure: OngB77GB4S48Nz5ivJ4cKGu7fxozUy8d8YTNVDJiiiGfzxzoui0eApxUWCAyc8Pwex9I2IhNM4NmsZqeuzWWEh9N3OO7B+jbsrCPXmEeBLH4VviyTvU6ptFH/IQc0U2HKkR+8/uL1oPPuOpPMKxYv75+HSltZDOiBdAEAFg40FA=
