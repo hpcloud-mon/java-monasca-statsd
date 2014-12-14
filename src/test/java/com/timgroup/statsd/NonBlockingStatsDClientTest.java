@@ -27,7 +27,7 @@ public class NonBlockingStatsDClientTest {
         server.close();
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_value_to_statsd() throws Exception {
 
 
@@ -37,7 +37,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mycount:24|c"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_value_to_statsd_with_null_tags() throws Exception {
 
 
@@ -47,7 +47,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mycount:24|c"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_value_to_statsd_with_empty_tags() throws Exception {
 
 
@@ -57,7 +57,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mycount:24|c"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_value_to_statsd_with_tags() throws Exception {
 
 
@@ -67,7 +67,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mycount:24|c|#baz,foo:bar"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_increment_to_statsd() throws Exception {
 
 
@@ -77,7 +77,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.myinc:1|c"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_increment_to_statsd_with_tags() throws Exception {
 
 
@@ -87,7 +87,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.myinc:1|c|#baz,foo:bar"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_decrement_to_statsd() throws Exception {
 
 
@@ -97,7 +97,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mydec:-1|c"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_counter_decrement_to_statsd_with_tags() throws Exception {
 
 
@@ -107,7 +107,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mydec:-1|c|#baz,foo:bar"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_gauge_to_statsd() throws Exception {
 
 
@@ -117,7 +117,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mygauge:423|g"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_large_double_gauge_to_statsd() throws Exception {
 
 
@@ -127,7 +127,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mygauge:123456789012345.67|g"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_exact_double_gauge_to_statsd() throws Exception {
 
 
@@ -137,7 +137,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mygauge:123.456789|g"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_double_gauge_to_statsd() throws Exception {
 
 
@@ -147,7 +147,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mygauge:0.423|g"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_gauge_to_statsd_with_tags() throws Exception {
 
 
@@ -157,7 +157,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mygauge:423|g|#baz,foo:bar"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_double_gauge_to_statsd_with_tags() throws Exception {
 
 
@@ -167,7 +167,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.mygauge:0.423|g|#baz,foo:bar"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_histogram_to_statsd() throws Exception {
 
 
@@ -177,7 +177,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:423|h"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_double_histogram_to_statsd() throws Exception {
 
 
@@ -187,7 +187,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:0.423|h"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_histogram_to_statsd_with_tags() throws Exception {
 
 
@@ -197,7 +197,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:423|h|#baz,foo:bar"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_double_histogram_to_statsd_with_tags() throws Exception {
 
 
@@ -207,7 +207,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:0.423|h|#baz,foo:bar"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_timer_to_statsd() throws Exception {
 
 
@@ -243,7 +243,7 @@ public class NonBlockingStatsDClientTest {
     }
 
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_timer_to_statsd_with_tags() throws Exception {
 
 
@@ -254,7 +254,7 @@ public class NonBlockingStatsDClientTest {
     }
 
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_gauge_mixed_tags() throws Exception {
 
         final NonBlockingStatsDClient empty_prefix_client = new NonBlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT, new String[] {"instance:foo", "app:bar"});
@@ -264,7 +264,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.value:423|g|#app:bar,instance:foo,baz"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_gauge_constant_tags_only() throws Exception {
 
         final NonBlockingStatsDClient empty_prefix_client = new NonBlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT, new String[] {"instance:foo", "app:bar"});
@@ -274,7 +274,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("my.prefix.value:423|g|#app:bar,instance:foo"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_gauge_empty_prefix() throws Exception {
 
         final NonBlockingStatsDClient empty_prefix_client = new NonBlockingStatsDClient("", "localhost", STATSD_SERVER_PORT);
@@ -284,7 +284,7 @@ public class NonBlockingStatsDClientTest {
         assertThat(server.messagesReceived(), contains("top.level.value:423|g"));
     }
 
-    @Test(timeout=5000L) public void
+    @Test public void
     sends_gauge_null_prefix() throws Exception {
 
         final NonBlockingStatsDClient null_prefix_client = new NonBlockingStatsDClient(null, "localhost", STATSD_SERVER_PORT);

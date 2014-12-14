@@ -1,4 +1,4 @@
-package com.ranartech.statsd;
+package com.github.arnabk.statsd;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;

@@ -1,9 +1,10 @@
-> Test existing test classes. They are throwing error in test mode
 > Write test classes for com.ranartech.statsd package
-> Update documentation of NonBlockingStatsDEventClient with threading and non-blocking details
 > Write test code which posts some dummy messages to chartreport.binary.com. Remove this code later
-> Fix README.md documentation
 > Prepare the project for maven distribution
+> Fix README.md documentation
 > Write a blog @ techblog.ranartech.com
 > Submit the project details to datadoghq
 > Delete this file
+http://docs.datadoghq.com/libraries/
+http://maven.apache.org/guides/mini/guide-central-repository-upload.html
+Blog about the new library and send link to blog and Github repo to datadogHQ

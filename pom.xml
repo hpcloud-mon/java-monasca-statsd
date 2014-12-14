@@ -2,7 +2,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.ranartech</groupId>
+	<groupId>com.github.arnabk.statsd</groupId>
 	<artifactId>java-dogstatsd-client</artifactId>
 	<packaging>jar</packaging>
 	<name>java-dogstatsd-client</name>
@@ -23,16 +23,16 @@
 	</licenses>
 
 	<scm>
-		<url>http://github.com/ranartech/java-dogstatsd-client</url>
-		<connection>scm:git:git://github.com/ranartech/java-dogstatsd-client.git</connection>
-		<developerConnection>scm:git:git@github.com:ranartech/java-dogstatsd-client.git</developerConnection>
+		<url>http://github.com/arnabk/java-dogstatsd-client</url>
+		<connection>scm:git:git://github.com/arnabk/java-dogstatsd-client.git</connection>
+		<developerConnection>scm:git:git@github.com:arnabk/java-dogstatsd-client.git</developerConnection>
 	</scm>
 
 	<developers>
 		<developer>
 			<id>arnab</id>
 			<name>Arnab Karmakar</name>
-			<email>arnab@ranartech.com</email>
+			<email>arnab.k@gmail.com</email>
 		</developer>
 	</developers>
 
@@ -54,17 +54,19 @@
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<target>1.6</target>
-					<source>1.6</source>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<configuration>
-					<skipTests>true</skipTests>
+					<target>${java.version}</target>
+					<source>${java.version}</source>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
 
+	<ciManagement>
+		<system>Travis CI</system>
+		<url>https://travis-ci.org/arnabk/java-dogstatsd-client</url>
+	</ciManagement>
+	<issueManagement>
+		<system>Github Issues</system>
+		<url>https://github.com/arnabk/java-dogstatsd-client/issues</url>
+	</issueManagement>
 </project>

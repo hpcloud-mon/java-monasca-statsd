@@ -1,4 +1,4 @@
-package com.ranartech.statsd;
+package com.github.arnabk.statsd;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -11,6 +11,32 @@ import com.timgroup.statsd.StatsDClientErrorHandler;
 import com.timgroup.statsd.StatsDClientException;
 
 /** 
+ * 
+ * A simple StatsD client implementation facilitating event reporting.
+ *
+ * <p>Upon instantiation, this client will establish a socket connection to a StatsD instance
+ * running on the specified host and port. Events are then sent over this connection as they are
+ * received by the client.
+ * </p>
+ *
+ * <p>Six key methods are provided for the submission of events for the application under
+ * scrutiny:
+ * <ul>
+ *   <li>{@link #event(String, String)} - inherited from base class {@link BlockingStatsDEventClient}</li>
+ *   <li>{@link #event(String, String, AlertType)} - inherited from base class {@link BlockingStatsDEventClient}</li>
+ *   <li>{@link #event(String, String, long)} - inherited from base class {@link BlockingStatsDEventClient}</li>
+ *   <li>{@link #event(String, String, Priority)} - inherited from base class {@link BlockingStatsDEventClient}</li>
+ *   <li>{@link #event(String, String, String...)} - inherited from base class {@link BlockingStatsDEventClient}</li>
+ *   <li>{@link #event(String, String, long, String, Priority, String, AlertType, String...)} - overriding from base class {@link BlockingStatsDEventClient} and converting it to non-blocking</li>
+ * </ul>
+ * From the perspective of the application, these methods are non-blocking, with the resulting
+ * IO operations being carried out in a separate thread. Furthermore, these methods are guaranteed
+ * not to throw an exception which may disrupt application execution.
+ * </p>
+ *
+ * <p>As part of a clean system shutdown, the {@link #stop()} method should be invoked
+ * on any StatsD clients.</p>
+ * 
  * @author Arnab Karmakar
  *
  */
