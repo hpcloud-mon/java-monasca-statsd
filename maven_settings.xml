@@ -1,4 +1,5 @@
 <settings>
+<<<<<<< HEAD
   <servers>
     <server>
       <id>ossrh</id>
@@ -6,4 +7,13 @@
       <password>${env.CI_DEPLOY_PASSWORD}</password>
     </server>
   </servers>
+=======
+  <severs>
+    <server>
+      <id>ossrh</id>
+      <username>${env.CI_DEPLOY_USERNAME}</username>
+      <password>${env.CI_DEPLOY_PASSWORD}</password>
+    </server>
+  </severs>
+>>>>>>> branch 'master' of https://github.com/arnabk/java-dogstatsd-client.git
 </settings>
