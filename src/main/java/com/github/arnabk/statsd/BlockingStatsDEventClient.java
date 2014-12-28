@@ -165,6 +165,8 @@ public class BlockingStatsDEventClient  {
 
     /**
      * Generate a suffix conveying the given tag list to the client
+     * @param tags
+     * @return 
      */
     protected String tagString(String[] tags) {
         boolean have_call_tags = (tags != null && tags.length > 0);
@@ -198,7 +200,7 @@ public class BlockingStatsDEventClient  {
      * @param message
      */
     public void event( String title, String message ) {
-    	event( title, message, 0, null, null, null, null, null, null);
+    	event(title, message, 0, null, null, null, null, (String[]) null);
     }
     
     /**
@@ -208,7 +210,7 @@ public class BlockingStatsDEventClient  {
      * @param dateHappened - It should be in seconds
      */
     public void event( String title, String message, long dateHappened ) {
-    	event( title, message, dateHappened, null, null, null, null, (String[])null);
+    	event(title, message, dateHappened, null, null, null, null, (String[]) null);
     }
     
     /**
@@ -257,14 +259,14 @@ public class BlockingStatsDEventClient  {
     public void event(String title, String message, long dateHappened, String aggregationKey, 
 			Priority priority, String sourceTypeName, AlertType alterType, String... tags) {
     	if (title != null && message != null) {
-	    	blockingSend(prepareMessage(title, message, dateHappened, aggregationKey, priority, sourceTypeName, alterType, tagString(tags)));
+	    	blockingSend(prepareMessage(title, message, dateHappened, aggregationKey, priority, sourceTypeName, alterType, tags));
     	}
     }
     
     protected String prepareMessage(String title, String message, long dateHappened, String aggregationKey, 
 			Priority priority, String sourceTypeName, AlertType alterType, String... tags) {
     	StringBuilder sb = new StringBuilder();
-    	sb.append(String.format("_e{%d,%d}:%s|%s", title, message));
+    	sb.append(String.format("_e{%d,%d}:%s|%s", title.length(), message.length(), title, message));
     	if (dateHappened > 0) {
     		sb.append(String.format("|d:%d", dateHappened));
     	}

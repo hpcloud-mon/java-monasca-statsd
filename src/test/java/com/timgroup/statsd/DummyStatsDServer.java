@@ -8,8 +8,7 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
-
-final class DummyStatsDServer {
+public final class DummyStatsDServer {
     private final List<String> messagesReceived = new ArrayList<String>();
     private final DatagramSocket server;
 

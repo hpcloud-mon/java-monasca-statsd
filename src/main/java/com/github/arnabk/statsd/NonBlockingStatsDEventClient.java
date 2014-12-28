@@ -55,7 +55,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
         }
     });
     
-    private BlockingQueue<EventMessage> blockingQueue = new LinkedBlockingDeque<EventMessage>();
+    private final BlockingQueue<EventMessage> blockingQueue = new LinkedBlockingDeque<EventMessage>();
 
     /**
      * Create a new StatsD client communicating with a StatsD instance on the
@@ -140,7 +140,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
 										eMsg.getTitle(), eMsg.getMessage(), 
 										eMsg.getDateHappened(), eMsg.getAggregationKey(), 
 										eMsg.getPriority(), eMsg.getSourceTypeName(), 
-										eMsg.getAlterType(), tagString(eMsg.getTags())));
+										eMsg.getAlterType(), eMsg.getTags()));
 						}
 					} catch (Exception e) {
 						handler.handle(e);
@@ -154,6 +154,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      * Cleanly shut down this StatsD client. This method may throw an exception if
      * the socket cannot be closed.
      */
+    @Override
     public void stop() {
     	 try {
              executor.shutdown();

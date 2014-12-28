@@ -7,11 +7,11 @@ This version is forked from the upstream [java-statsd-client](https://github.com
 
 Downloads
 ---------
-The client jar is distributed via maven central, and can be downloaded [here](http://search.maven.org/#search%7Cga%7C1%7Cg%3Acom.timgroup%20a%3Ajava-statsd-client).
+The client jar is distributed via maven central
 
 ```xml
 <dependency>
-    <groupId>com.ranartech</groupId>
+    <groupId>com.github.arnabk</groupId>
     <artifactId>java-dogstatsd-client</artifactId>
     <version>1.0.0</version>
 </dependency>
@@ -22,8 +22,8 @@ Usage
 
 ** Non-blocking usage (metrics) **
 ```java
-import com.timgroup.statsd.StatsDClient;
 import com.timgroup.statsd.NonBlockingStatsDClient;
+import com.timgroup.statsd.StatsDClient;
 
 public class Foo {
 
@@ -38,8 +38,8 @@ public class Foo {
     statsd.incrementCounter("foo");
     statsd.recordGaugeValue("bar", 100);
     statsd.recordGaugeValue("baz", 0.01); /* DataDog extension: support for floating-point gauges */
-    statsd.recordHistogram("qux", 15)     /* DataDog extension: histograms */
-    statsd.recordHistogram("qux", 15.5)   /* ...also floating-point */
+    statsd.recordHistogramValue("qux", 15);     /* DataDog extension: histograms */
+    statsd.recordHistogramValue("qux", 15.5);   /* ...also floating-point */
 
     /* Compatibility note: Unlike upstream statsd, DataDog expects execution times to be a
      * floating-point value in seconds, not a millisecond value. This library
@@ -52,8 +52,8 @@ public class Foo {
 
 ** Blocking usage (metrics) **
 ```java
+import com.github.arnabk.statsd.BlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
-import com.ranartech.statsd.BlockingStatsDClient;
 
 public class Foo {
 
@@ -68,8 +68,8 @@ public class Foo {
     statsd.incrementCounter("foo");
     statsd.recordGaugeValue("bar", 100);
     statsd.recordGaugeValue("baz", 0.01); /* DataDog extension: support for floating-point gauges */
-    statsd.recordHistogram("qux", 15)     /* DataDog extension: histograms */
-    statsd.recordHistogram("qux", 15.5)   /* ...also floating-point */
+    statsd.recordHistogramValue("qux", 15);     /* DataDog extension: histograms */
+    statsd.recordHistogramValue("qux", 15.5);   /* ...also floating-point */
 
     /* Compatibility note: Unlike upstream statsd, DataDog expects execution times to be a
      * floating-point value in seconds, not a millisecond value. This library
@@ -81,6 +81,38 @@ public class Foo {
 ```
 
 ** Non-blocking usage (events) **
+```java
+import com.github.arnabk.statsd.NonBlockingStatsDEventClient;
+
+public class Foo {
+
+  private static final NonBlockingStatsDEventClient statsd = new NonBlockingStatsDEventClient(
+    "statsd-host",                        /* common case: localhost */
+    8125,                                 /* port */
+    new String[] {"tag:value"}            /* DataDog extension: Constant tags, always applied */
+  );
+
+  public static final void main(String[] args) {
+    statsd.event("title", "message");
+  }
+}
+```
 
 
 ** Blocking usage (events) **
+```java
+import com.github.arnabk.statsd.BlockingStatsDEventClient;
+
+public class Foo {
+
+  private static final BlockingStatsDEventClient statsd = new BlockingStatsDEventClient(
+    "statsd-host",                        /* common case: localhost */
+    8125,                                 /* port */
+    new String[] {"tag:value"}            /* DataDog extension: Constant tags, always applied */
+  );
+
+  public static final void main(String[] args) {
+    statsd.event("title", "message");
+  }
+}
+```

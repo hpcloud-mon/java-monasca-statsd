@@ -15,15 +15,19 @@ public class EventMessage {
 	private AlertType alterType;
 	
 	private String[] tags;
+
+        /**
+         */
+        public EventMessage() {
+        }
 	
 	/**
 	 * @param title
 	 * @param message
 	 */
 	public EventMessage(String title, String message) {
-		super();
-		this.title = title;
-		this.message = message;
+            this.title = title;
+            this.message = message;
 	}
 
 	/**
@@ -33,12 +37,13 @@ public class EventMessage {
 		return title;
 	}
 
-	/**
-	 * @param title
-	 */
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setTitle(String title) {
+        this.title = title;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
 	/**
 	 * @return

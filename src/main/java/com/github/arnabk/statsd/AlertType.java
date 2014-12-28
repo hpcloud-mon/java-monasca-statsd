@@ -6,6 +6,6 @@ package com.github.arnabk.statsd;
  */
 public enum AlertType {
 
-	error, warming, info, success;
+	error, warning, info, success;
 	
 }
