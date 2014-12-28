@@ -5,7 +5,7 @@ A statsd client library implemented in Java.  Allows for Java applications to ea
 
 This version is forked from the upstream [java-statsd-client](https://github.com/indeedeng/java-dogstatsd-client) project, adding support for [DataDog](http://datadoghq.com/) events and blocking metrics for use with [dogstatsd](http://docs.datadoghq.com/guides/dogstatsd/).
 
-Discuss this library [Here](http://ranartech.com/techblog/?p=160)
+Discuss the library [here](http://ranartech.com/techblog/?p=160)
 
 Downloads
 ---------
