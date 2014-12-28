@@ -20,7 +20,7 @@ The client jar is distributed via maven central
 Usage
 -----
 
-** Non-blocking usage (metrics) **
+**Non-blocking usage (metrics)**
 ```java
 import com.timgroup.statsd.NonBlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
@@ -50,7 +50,7 @@ public class Foo {
 }
 ```
 
-** Blocking usage (metrics) **
+**Blocking usage (metrics)**
 ```java
 import com.github.arnabk.statsd.BlockingStatsDClient;
 import com.timgroup.statsd.StatsDClient;
@@ -80,7 +80,7 @@ public class Foo {
 }
 ```
 
-** Non-blocking usage (events) **
+**Non-blocking usage (events)**
 ```java
 import com.github.arnabk.statsd.NonBlockingStatsDEventClient;
 
@@ -99,7 +99,7 @@ public class Foo {
 ```
 
 
-** Blocking usage (events) **
+**Blocking usage (events)**
 ```java
 import com.github.arnabk.statsd.BlockingStatsDEventClient;
 
