@@ -3,8 +3,6 @@ package com.github.arnabk.statsd;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetSocketAddress;
-import java.text.NumberFormat;
-import java.util.Locale;
 
 import com.timgroup.statsd.StatsDClientErrorHandler;
 import com.timgroup.statsd.StatsDClientException;
@@ -41,25 +39,6 @@ public class BlockingStatsDEventClient  {
 
     private static final StatsDClientErrorHandler NO_OP_HANDLER = new StatsDClientErrorHandler() {
         @Override public void handle(Exception e) { /* No-op */ }
-    };
-
-    /**
-     * Because NumberFormat is not thread-safe we cannot share instances across threads. Use a ThreadLocal to
-     * create one pre thread as this seems to offer a significant performance improvement over creating one per-thread:
-     * http://stackoverflow.com/a/1285297/2648
-     * https://github.com/indeedeng/java-dogstatsd-client/issues/4
-     */
-    protected static final ThreadLocal<NumberFormat> NUMBER_FORMATTERS = new ThreadLocal<NumberFormat>() {
-        @Override
-        protected NumberFormat initialValue() {
-
-            // Always create the formatter for the US locale in order to avoid this bug:
-            // https://github.com/indeedeng/java-dogstatsd-client/issues/3
-            NumberFormat numberFormatter = NumberFormat.getInstance(Locale.US);
-            numberFormatter.setGroupingUsed(false);
-            numberFormatter.setMaximumFractionDigits(6);
-            return numberFormatter;
-        }
     };
 
     protected final DatagramSocket clientSocket;

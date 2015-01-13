@@ -6,7 +6,7 @@
 	<artifactId>java-dogstatsd-client</artifactId>
 	<packaging>jar</packaging>
 	<name>java-dogstatsd-client</name>
-	<version>1.0.0</version>
+	<version>1.0.1</version>
 	<description>A tiny library allowing Java applications to communicate with DataDog statsd instances easily.</description>
 	<url>https://github.com/arnabk/java-dogstatsd-client</url>
 
@@ -65,6 +65,11 @@
 			<artifactId>openpojo</artifactId>
 			<version>0.6.2</version>
 			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>org.apache.commons</groupId>
+		    <artifactId>commons-math3</artifactId>
+		    <version>3.4.1</version>
 		</dependency>
 	</dependencies>
 

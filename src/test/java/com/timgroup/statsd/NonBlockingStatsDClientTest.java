@@ -124,7 +124,7 @@ public class NonBlockingStatsDClientTest {
         client.recordGaugeValue("mygauge", 123456789012345.67890);
         server.waitForMessage();
 
-        assertThat(server.messagesReceived(), contains("my.prefix.mygauge:123456789012345.67|g"));
+        assertThat(server.messagesReceived(), contains("my.prefix.mygauge:123456789012345.670000|g"));
     }
 
     @Test public void
@@ -144,7 +144,7 @@ public class NonBlockingStatsDClientTest {
         client.recordGaugeValue("mygauge", 0.423);
         server.waitForMessage();
 
-        assertThat(server.messagesReceived(), contains("my.prefix.mygauge:0.423|g"));
+        assertThat(server.messagesReceived(), contains("my.prefix.mygauge:0.423000|g"));
     }
 
     @Test public void
@@ -164,7 +164,7 @@ public class NonBlockingStatsDClientTest {
         client.recordGaugeValue("mygauge", 0.423, "foo:bar", "baz");
         server.waitForMessage();
 
-        assertThat(server.messagesReceived(), contains("my.prefix.mygauge:0.423|g|#baz,foo:bar"));
+        assertThat(server.messagesReceived(), contains("my.prefix.mygauge:0.423000|g|#baz,foo:bar"));
     }
 
     @Test public void
@@ -184,7 +184,7 @@ public class NonBlockingStatsDClientTest {
         client.recordHistogramValue("myhistogram", 0.423);
         server.waitForMessage();
 
-        assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:0.423|h"));
+        assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:0.423000|h"));
     }
 
     @Test public void
@@ -204,7 +204,7 @@ public class NonBlockingStatsDClientTest {
         client.recordHistogramValue("myhistogram", 0.423, "foo:bar", "baz");
         server.waitForMessage();
 
-        assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:0.423|h|#baz,foo:bar"));
+        assertThat(server.messagesReceived(), contains("my.prefix.myhistogram:0.423000|h|#baz,foo:bar"));
     }
 
     @Test public void

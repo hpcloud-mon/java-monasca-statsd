@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
-import java.text.NumberFormat;
-import java.util.Locale;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.math3.util.Precision;
 
 /**
  * A simple StatsD client implementation facilitating metrics recording.
@@ -46,25 +46,6 @@ public final class NonBlockingStatsDClient implements StatsDClient {
 
     private static final StatsDClientErrorHandler NO_OP_HANDLER = new StatsDClientErrorHandler() {
         @Override public void handle(Exception e) { /* No-op */ }
-    };
-
-    /**
-     * Because NumberFormat is not thread-safe we cannot share instances across threads. Use a ThreadLocal to
-     * create one pre thread as this seems to offer a significant performance improvement over creating one per-thread:
-     * http://stackoverflow.com/a/1285297/2648
-     * https://github.com/indeedeng/java-dogstatsd-client/issues/4
-     */
-    private static final ThreadLocal<NumberFormat> NUMBER_FORMATTERS = new ThreadLocal<NumberFormat>() {
-        @Override
-        protected NumberFormat initialValue() {
-
-            // Always create the formatter for the US locale in order to avoid this bug:
-            // https://github.com/indeedeng/java-dogstatsd-client/issues/3
-            NumberFormat numberFormatter = NumberFormat.getInstance(Locale.US);
-            numberFormatter.setGroupingUsed(false);
-            numberFormatter.setMaximumFractionDigits(6);
-            return numberFormatter;
-        }
     };
 
     private final String prefix;
@@ -321,9 +302,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      */
     @Override
     public void recordGaugeValue(String aspect, double value, String... tags) {
-        /* Intentionally using %s rather than %f here to avoid
-         * padding with extra 0s to represent precision */
-        send(String.format("%s%s:%s|g%s", prefix, aspect, NUMBER_FORMATTERS.get().format(value), tagString(tags)));
+        send(String.format("%s%s:%f|g%s", prefix, aspect, Precision.round(value, 6), tagString(tags)));
     }
 
     /**
@@ -399,9 +378,7 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      */
     @Override
     public void recordHistogramValue(String aspect, double value, String... tags) {
-        /* Intentionally using %s rather than %f here to avoid
-         * padding with extra 0s to represent precision */
-        send(String.format("%s%s:%s|h%s", prefix, aspect, NUMBER_FORMATTERS.get().format(value), tagString(tags)));
+        send(String.format("%s%s:%f|h%s", prefix, aspect, Precision.round(value, 6), tagString(tags)));
     }
 
     /**
