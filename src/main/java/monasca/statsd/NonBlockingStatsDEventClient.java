@@ -1,14 +1,12 @@
-package com.github.arnabk.statsd;
+package monasca.statsd;
 
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-
-import com.timgroup.statsd.StatsDClientErrorHandler;
-import com.timgroup.statsd.StatsDClientException;
 
 /** 
  * 
@@ -37,8 +35,6 @@ import com.timgroup.statsd.StatsDClientException;
  * <p>As part of a clean system shutdown, the {@link #stop()} method should be invoked
  * on any StatsD clients.</p>
  * 
- * @author Arnab Karmakar
- *
  */
 public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClient {
 
@@ -67,6 +63,8 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      * exceptions thrown during subsequent usage are consumed, guaranteeing
      * that failures in metrics will not affect normal code execution.
      *
+     * @param prefix
+     *     the prefix to apply to keys sent via this client
      * @param hostname
      *     the host name of the targeted StatsD server
      * @param port
@@ -74,8 +72,8 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      * @throws StatsDClientException
      *     if the client could not be started
      */
-    public NonBlockingStatsDEventClient( String hostname, int port) throws StatsDClientException {
-        this(hostname, port, null, NO_OP_HANDLER);
+    public NonBlockingStatsDEventClient(String prefix, String hostname, int port) throws StatsDClientException {
+        this(prefix, hostname, port, null, NO_OP_HANDLER);
     }
 
     /**
@@ -88,17 +86,19 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      * exceptions thrown during subsequent usage are consumed, guaranteeing
      * that failures in metrics will not affect normal code execution.
      * 
+     * @param prefix
+     *     the prefix to apply to keys sent via this client
      * @param hostname
      *     the host name of the targeted StatsD server
      * @param port
      *     the port of the targeted StatsD server
-     * @param constantTags
-     *     tags to be added to all content sent (each of them should be in the format key:value)
+     * @param defaultDimensions
+     *     dimensions to be added to all content sent
      * @throws StatsDClientException
      *     if the client could not be started
      */
-    public NonBlockingStatsDEventClient( String hostname, int port, String[] constantTags) throws StatsDClientException {
-        this( hostname, port, constantTags, NO_OP_HANDLER);
+    public NonBlockingStatsDEventClient(String prefix, String hostname, int port, Map<String, String> defaultDimensions) throws StatsDClientException {
+        this(prefix, hostname, port, defaultDimensions, NO_OP_HANDLER);
     }
 
     /**
@@ -118,15 +118,15 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      *     the host name of the targeted StatsD server
      * @param port
      *     the port of the targeted StatsD server
-     * @param constantTags
-     *     tags to be added to all content sent (each of them should be in the format key:value)
+     * @param defaultDimensions
+     *     a map of dimensions to be added to all metrics sent
      * @param errorHandler
      *     handler to use when an exception occurs during usage
      * @throws StatsDClientException
      *     if the client could not be started
      */
-    public NonBlockingStatsDEventClient(String hostname, int port, String[] constantTags, StatsDClientErrorHandler errorHandler) throws StatsDClientException {
-        super(hostname, port, constantTags, errorHandler);
+    public NonBlockingStatsDEventClient(String prefix, String hostname, int port, Map<String, String> defaultDimensions, StatsDClientErrorHandler errorHandler) throws StatsDClientException {
+        super(prefix, hostname, port, defaultDimensions, errorHandler);
         executor.execute(new Runnable() {
 			
 			@Override
@@ -140,7 +140,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
 										eMsg.getTitle(), eMsg.getMessage(), 
 										eMsg.getDateHappened(), eMsg.getAggregationKey(), 
 										eMsg.getPriority(), eMsg.getSourceTypeName(), 
-										eMsg.getAlterType(), eMsg.getTags()));
+										eMsg.getAlterType(), eMsg.getDimensions()));
 						}
 					} catch (Exception e) {
 						handler.handle(e);
@@ -156,7 +156,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      */
     @Override
     public void stop() {
-    	 try {
+         try {
              executor.shutdown();
              executor.awaitTermination(30, TimeUnit.SECONDS);
          }
@@ -170,7 +170,7 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
 
     /**
      * 
-     * Reports an event to the datadog agent (non-blocking)
+     * Reports an event to the monasca agent (non-blocking)
      * 
      * @param title
      * @param message
@@ -182,18 +182,20 @@ public final class NonBlockingStatsDEventClient extends BlockingStatsDEventClien
      * @param tags -> Each item in this array should in the format key:value
      */
     @Override
-    public void event(final String title, final String message, final long dateHappened, final String aggregationKey, 
-    		final Priority priority, final String sourceTypeName, final AlertType alterType, final String... tags) {
-    	if (title != null && message != null) {
-    		final EventMessage eMsg = new EventMessage(title, message);
-    		eMsg.setDateHappened(dateHappened);
-    		eMsg.setAggregationKey(aggregationKey);
-    		eMsg.setAlterType(alterType);
-    		eMsg.setPriority(priority);
-    		eMsg.setSourceTypeName(sourceTypeName);
-    		eMsg.setTags(tags);
-    		blockingQueue.offer(eMsg);
-    	}
+    public boolean event(final String title, final String message, final long dateHappened, final String aggregationKey, 
+    		final Priority priority, final String sourceTypeName, final AlertType alterType, Map<String, String> dimensions) {
+        	if (title != null && message != null) {
+        		final EventMessage eMsg = new EventMessage(title, message);
+        		eMsg.setDateHappened(dateHappened);
+        		eMsg.setAggregationKey(aggregationKey);
+        		eMsg.setAlterType(alterType);
+        		eMsg.setPriority(priority);
+        		eMsg.setSourceTypeName(sourceTypeName);
+        		eMsg.setDimensions(dimensions);
+        		blockingQueue.offer(eMsg);
+        	}
+
+        	return true;
     }
     
 }

@@ -1,5 +1,5 @@
 
-package com.timgroup.statsd;
+package monasca.test.statsd;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

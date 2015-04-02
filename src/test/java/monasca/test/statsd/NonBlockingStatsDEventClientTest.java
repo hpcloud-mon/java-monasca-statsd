@@ -1,19 +1,22 @@
-package com.github.arnabk.statsd;
+package monasca.test.statsd;
 
-import com.timgroup.statsd.DummyStatsDServer;
 import java.net.SocketException;
+
+import monasca.statsd.AlertType;
+import monasca.statsd.NonBlockingStatsDEventClient;
+import monasca.statsd.Priority;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-public class BlockingStatsDEventClientTest {
+public class NonBlockingStatsDEventClientTest {
 
     private static final int STATSD_SERVER_PORT = 17254;
-    private final BlockingStatsDEventClient client = new BlockingStatsDEventClient("localhost", STATSD_SERVER_PORT);
+    private final NonBlockingStatsDEventClient client = new NonBlockingStatsDEventClient("localhost", STATSD_SERVER_PORT);
     private DummyStatsDServer server;
 
     @Before

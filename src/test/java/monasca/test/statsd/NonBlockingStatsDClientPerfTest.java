@@ -1,4 +1,4 @@
-package com.timgroup.statsd;
+package monasca.test.statsd;
 
 
 import java.net.SocketException;
@@ -6,6 +6,9 @@ import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import monasca.statsd.NonBlockingStatsDClient;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,10 +1,8 @@
-package com.timgroup.statsd;
+package monasca.statsd;
 
 /**
  * Describes a handler capable of processing exceptions that occur during StatsD client operations.
  * 
- * @author Tom Denley
- *
  */
 public interface StatsDClientErrorHandler {
 

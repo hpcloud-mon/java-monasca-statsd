@@ -1,7 +1,9 @@
-package com.github.arnabk.statsd;
+package monasca.test.statsd;
 
-import com.timgroup.statsd.DummyStatsDServer;
 import java.net.SocketException;
+
+import monasca.statsd.NonBlockingStatsDClient;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,10 +13,10 @@ import java.util.Locale;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 
-public class BlockingStatsDClientTest {
+public class NonBlockingStatsDClientTest {
 
     private static final int STATSD_SERVER_PORT = 17254;
-    private final BlockingStatsDClient client = new BlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT);
+    private final NonBlockingStatsDClient client = new NonBlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT);
     private DummyStatsDServer server;
 
     @Before
@@ -258,7 +260,7 @@ public class BlockingStatsDClientTest {
     @Test public void
     sends_gauge_mixed_tags() throws Exception {
 
-        final BlockingStatsDClient empty_prefix_client = new BlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT, new String[] {"instance:foo", "app:bar"});
+        final NonBlockingStatsDClient empty_prefix_client = new NonBlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT, new String[] {"instance:foo", "app:bar"});
         empty_prefix_client.gauge("value", 423, "baz");
         server.waitForMessage();
 
@@ -268,7 +270,7 @@ public class BlockingStatsDClientTest {
     @Test public void
     sends_gauge_constant_tags_only() throws Exception {
 
-        final BlockingStatsDClient empty_prefix_client = new BlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT, new String[] {"instance:foo", "app:bar"});
+        final NonBlockingStatsDClient empty_prefix_client = new NonBlockingStatsDClient("my.prefix", "localhost", STATSD_SERVER_PORT, new String[] {"instance:foo", "app:bar"});
         empty_prefix_client.gauge("value", 423);
         server.waitForMessage();
 
@@ -278,7 +280,7 @@ public class BlockingStatsDClientTest {
     @Test public void
     sends_gauge_empty_prefix() throws Exception {
 
-        final BlockingStatsDClient empty_prefix_client = new BlockingStatsDClient("", "localhost", STATSD_SERVER_PORT);
+        final NonBlockingStatsDClient empty_prefix_client = new NonBlockingStatsDClient("", "localhost", STATSD_SERVER_PORT);
         empty_prefix_client.gauge("top.level.value", 423);
         server.waitForMessage();
 
@@ -288,7 +290,7 @@ public class BlockingStatsDClientTest {
     @Test public void
     sends_gauge_null_prefix() throws Exception {
 
-        final BlockingStatsDClient null_prefix_client = new BlockingStatsDClient(null, "localhost", STATSD_SERVER_PORT);
+        final NonBlockingStatsDClient null_prefix_client = new NonBlockingStatsDClient(null, "localhost", STATSD_SERVER_PORT);
         null_prefix_client.gauge("top.level.value", 423);
         server.waitForMessage();
 

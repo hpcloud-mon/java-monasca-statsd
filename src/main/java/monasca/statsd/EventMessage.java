@@ -1,4 +1,7 @@
-package com.github.arnabk.statsd;
+package monasca.statsd;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An event message Java bean that is used to hold an event object (which is sent to the datadog agent)
@@ -14,7 +17,7 @@ public class EventMessage {
 	
 	private AlertType alterType;
 	
-	private String[] tags;
+	private Map<String, String> dimensions = new HashMap<String, String>();;
 
         /**
          */
@@ -126,15 +129,17 @@ public class EventMessage {
 	/**
 	 * @return
 	 */
-	public String[] getTags() {
-		return tags;
+	public Map<String, String> getDimensions() {
+	    Map<String, String> returnMap = new HashMap <String, String>();
+	    returnMap.putAll(dimensions);
+		return returnMap;
 	}
 
 	/**
-	 * @param tags
+	 * @param dimensions
 	 */
-	public void setTags(String[] tags) {
-		this.tags = tags;
+	public void setDimensions(Map<String, String> dimensions) {
+		this.dimensions.putAll(dimensions);
 	}
 	
 }

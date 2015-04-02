@@ -1,4 +1,6 @@
-package com.github.arnabk.statsd;
+package monasca.test.statsd;
+
+import monasca.statsd.EventMessage;
 
 import org.junit.Before;
 import org.junit.Test;

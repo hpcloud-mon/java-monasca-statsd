@@ -1,8 +1,7 @@
-package com.github.arnabk.statsd;
+package monasca.statsd;
 
 /**
  * Event priority for datadog events
- * @author arnab
  */
 public enum Priority {
 

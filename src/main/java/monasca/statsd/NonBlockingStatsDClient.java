@@ -1,9 +1,11 @@
-package com.timgroup.statsd;
+package monasca.statsd;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -37,22 +39,12 @@ import org.apache.commons.math3.util.Precision;
  * <p>As part of a clean system shutdown, the {@link #stop()} method should be invoked
  * on any StatsD clients.</p>
  *
- * @author Tom Denley
- *
  */
-public final class NonBlockingStatsDClient implements StatsDClient {
-
-    private static final int PACKET_SIZE_BYTES = 1500;
+public final class NonBlockingStatsDClient extends StatsDClientBase implements StatsDClient {
 
     private static final StatsDClientErrorHandler NO_OP_HANDLER = new StatsDClientErrorHandler() {
         @Override public void handle(Exception e) { /* No-op */ }
     };
-
-    private final String prefix;
-    private final DatagramChannel clientChannel;
-    private final InetSocketAddress address;
-    private final StatsDClientErrorHandler handler;
-    private final String constantTagsRendered;
 
     private final ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
         final ThreadFactory delegate = Executors.defaultThreadFactory();
@@ -105,13 +97,14 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     the host name of the targeted StatsD server
      * @param port
      *     the port of the targeted StatsD server
-     * @param constantTags
-     *     tags to be added to all content sent
+     * @param defaultDimensions
+     *     dimensions to be added to all content sent
      * @throws StatsDClientException
      *     if the client could not be started
      */
-    public NonBlockingStatsDClient(String prefix, String hostname, int port, String... constantTags) throws StatsDClientException {
-        this(prefix, hostname, port, constantTags, NO_OP_HANDLER);
+    public NonBlockingStatsDClient(String prefix, String hostname, int port,
+            Map<String, String> defaultDimensions) throws StatsDClientException {
+        this(prefix, hostname, port, defaultDimensions, NO_OP_HANDLER);
     }
 
     /**
@@ -131,38 +124,16 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     the host name of the targeted StatsD server
      * @param port
      *     the port of the targeted StatsD server
-     * @param constantTags
-     *     tags to be added to all content sent
+     * @param defaultDimensions
+     *     dimensions to be added to all content sent
      * @param errorHandler
      *     handler to use when an exception occurs during usage
      * @throws StatsDClientException
      *     if the client could not be started
      */
-    public NonBlockingStatsDClient(String prefix, String hostname, int port, String[] constantTags, StatsDClientErrorHandler errorHandler) throws StatsDClientException {
-        if(prefix != null && prefix.length() > 0) {
-            this.prefix = String.format("%s.", prefix);
-        } else {
-            this.prefix = "";
-        }
-        this.handler = errorHandler;
-
-        /* Empty list should be null for faster comparison */
-        if(constantTags != null && constantTags.length == 0) {
-            constantTags = null;
-        }
-
-        if(constantTags != null) {
-            this.constantTagsRendered = tagString(constantTags, null);
-        } else {
-            this.constantTagsRendered = null;
-        }
-
-        try {
-            this.clientChannel = DatagramChannel.open();
-            this.address = new InetSocketAddress(hostname, port);
-        } catch (Exception e) {
-            throw new StatsDClientException("Failed to start StatsD client", e);
-        }
+    public NonBlockingStatsDClient(String prefix, String hostname, int port, Map<String, String> defaultDimensions,
+            StatsDClientErrorHandler errorHandler) throws StatsDClientException {
+        super(prefix, hostname, port, defaultDimensions, errorHandler);
         this.executor.submit(new QueueConsumer());
     }
 
@@ -180,49 +151,8 @@ public final class NonBlockingStatsDClient implements StatsDClient {
             handler.handle(e);
         }
         finally {
-            if (clientChannel != null) {
-                try {
-                    clientChannel.close();
-                }
-                catch (IOException e) {
-                    handler.handle(e);
-                }
-            }
+            super.stop();
         }
-    }
-
-    /**
-     * Generate a suffix conveying the given tag list to the client
-     */
-    static String tagString(final String[] tags, final String tagPrefix) {
-        StringBuilder sb;
-        if(tagPrefix != null) {
-            if(tags == null || tags.length == 0) {
-                return tagPrefix;
-            }
-            sb = new StringBuilder(tagPrefix);
-            sb.append(",");
-        } else {
-            if(tags == null || tags.length == 0) {
-                return "";
-            }
-            sb = new StringBuilder("|#");
-        }
-
-        for(int n=tags.length - 1; n>=0; n--) {
-            sb.append(tags[n]);
-            if(n > 0) {
-                sb.append(",");
-            }
-        }
-        return sb.toString();
-    }
-
-    /**
-     * Generate a suffix conveying the given tag list to the client
-     */
-    String tagString(final String[] tags) {
-        return tagString(tags, constantTagsRendered);
     }
 
     /**
@@ -234,12 +164,12 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     the name of the counter to adjust
      * @param delta
      *     the amount to adjust the counter by
-     * @param tags
-     *     array of tags to be added to the data
+     * @param dimensions
+     *     map of dimensions to be added to the data
      */
     @Override
-    public void count(String aspect, long delta, String... tags) {
-        send(String.format("%s%s:%d|c%s", prefix, aspect, delta, tagString(tags)));
+    public void count(String aspect, long delta, Map<String, String> dimensions) {
+        send(String.format("%s%s:%d|c%s", prefix, aspect, delta, dimensionString(dimensions)));
     }
 
     /**
@@ -249,20 +179,20 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *
      * @param aspect
      *     the name of the counter to increment
-     * @param tags
-     *     array of tags to be added to the data
+     * @param dimensions
+     *     map of dimensions to be added to the data
      */
     @Override
-    public void incrementCounter(String aspect, String... tags) {
-        count(aspect, 1, tags);
+    public void incrementCounter(String aspect, Map<String, String> dimensions) {
+        count(aspect, 1, dimensions);
     }
 
     /**
-     * Convenience method equivalent to {@link #incrementCounter(String, String[])}.
+     * Convenience method equivalent to {@link #incrementCounter(String, Map<String, String>)}.
      */
     @Override
-    public void increment(String aspect, String... tags) {
-        incrementCounter(aspect, tags);
+    public void increment(String aspect, Map<String, String> dimensions) {
+        incrementCounter(aspect, dimensions);
     }
 
     /**
@@ -272,20 +202,20 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *
      * @param aspect
      *     the name of the counter to decrement
-     * @param tags
-     *     array of tags to be added to the data
+     * @param dimensions
+     *     map of dimensions to be added to the data
      */
     @Override
-    public void decrementCounter(String aspect, String... tags) {
-        count(aspect, -1, tags);
+    public void decrementCounter(String aspect, Map<String, String> dimensions) {
+        count(aspect, -1, dimensions);
     }
 
     /**
-     * Convenience method equivalent to {@link #decrementCounter(String, String[])}.
+     * Convenience method equivalent to {@link #decrementCounter(String, Map<String, String>)}.
      */
     @Override
-    public void decrement(String aspect, String... tags) {
-        decrementCounter(aspect, tags);
+    public void decrement(String aspect, Map<String, String> dimensions) {
+        decrementCounter(aspect, dimensions);
     }
 
     /**
@@ -297,20 +227,20 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     the name of the gauge
      * @param value
      *     the new reading of the gauge
-     * @param tags
-     *     array of tags to be added to the data
+     * @param dimensions
+     *     map of dimensions to be added to the data
      */
     @Override
-    public void recordGaugeValue(String aspect, double value, String... tags) {
-        send(String.format("%s%s:%f|g%s", prefix, aspect, Precision.round(value, 6), tagString(tags)));
+    public void recordGaugeValue(String aspect, double value, Map<String, String> dimensions) {
+        send(String.format("%s%s:%f|g%s", prefix, aspect, Precision.round(value, 6), dimensionString(dimensions)));
     }
 
     /**
-     * Convenience method equivalent to {@link #recordGaugeValue(String, double, String[])}.
+     * Convenience method equivalent to {@link #recordGaugeValue(String, double, Map<String, String>)}.
      */
     @Override
-    public void gauge(String aspect, double value, String... tags) {
-        recordGaugeValue(aspect, value, tags);
+    public void gauge(String aspect, double value, Map<String, String> dimensions) {
+        recordGaugeValue(aspect, value, dimensions);
     }
 
 
@@ -323,20 +253,20 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     the name of the gauge
      * @param value
      *     the new reading of the gauge
-     * @param tags
-     *     array of tags to be added to the data
+     * @param dimensions
+     *     map of dimensions to be added to the data
      */
     @Override
-    public void recordGaugeValue(String aspect, long value, String... tags) {
-        send(String.format("%s%s:%d|g%s", prefix, aspect, value, tagString(tags)));
+    public void recordGaugeValue(String aspect, long value, Map<String, String> dimensions) {
+        send(String.format("%s%s:%d|g%s", prefix, aspect, value, dimensionString(dimensions)));
     }
 
     /**
-     * Convenience method equivalent to {@link #recordGaugeValue(String, long, String[])}.
+     * Convenience method equivalent to {@link #recordGaugeValue(String, long, Map<String, String>)}.
      */
     @Override
-    public void gauge(String aspect, long value, String... tags) {
-        recordGaugeValue(aspect, value, tags);
+    public void gauge(String aspect, long value, Map<String, String> dimensions) {
+        recordGaugeValue(aspect, value, dimensions);
     }
 
     /**
@@ -348,45 +278,20 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     the name of the timed operation
      * @param timeInMs
      *     the time in milliseconds
-     * @param tags
-     *     array of tags to be added to the data
+     * @param dimensions
+     *     map of dimensions to be added to the data
      */
     @Override
-    public void recordExecutionTime(String aspect, long timeInMs, String... tags) {
-        send(String.format("%s%s:%d|ms%s", prefix, aspect, timeInMs, tagString(tags)));
+    public void recordExecutionTime(String aspect, long timeInMs, Map<String, String> dimensions) {
+        send(String.format("%s%s:%d|ms%s", prefix, aspect, timeInMs, dimensionString(dimensions)));
     }
 
     /**
-     * Convenience method equivalent to {@link #recordExecutionTime(String, long, String[])}.
+     * Convenience method equivalent to {@link #recordExecutionTime(String, long, Map<String, String>)}.
      */
     @Override
-    public void time(String aspect, long value, String... tags) {
-        recordExecutionTime(aspect, value, tags);
-    }
-
-    /**
-     * Records a value for the specified named histogram.
-     *
-     * <p>This method is non-blocking and is guaranteed not to throw an exception.</p>
-     *
-     * @param aspect
-     *     the name of the histogram
-     * @param value
-     *     the value to be incorporated in the histogram
-     * @param tags
-     *     array of tags to be added to the data
-     */
-    @Override
-    public void recordHistogramValue(String aspect, double value, String... tags) {
-        send(String.format("%s%s:%f|h%s", prefix, aspect, Precision.round(value, 6), tagString(tags)));
-    }
-
-    /**
-     * Convenience method equivalent to {@link #recordHistogramValue(String, double, String[])}.
-     */
-    @Override
-    public void histogram(String aspect, double value, String... tags) {
-        recordHistogramValue(aspect, value, tags);
+    public void time(String aspect, long value, Map<String, String> dimensions) {
+        recordExecutionTime(aspect, value, dimensions);
     }
 
     /**
@@ -398,20 +303,45 @@ public final class NonBlockingStatsDClient implements StatsDClient {
      *     the name of the histogram
      * @param value
      *     the value to be incorporated in the histogram
-     * @param tags
-     *     array of tags to be added to the data
+     * @param dimensions
+     *     map of dimensions to be added to the data
      */
     @Override
-    public void recordHistogramValue(String aspect, long value, String... tags) {
-        send(String.format("%s%s:%d|h%s", prefix, aspect, value, tagString(tags)));
+    public void recordHistogramValue(String aspect, double value, Map<String, String> dimensions) {
+        send(String.format("%s%s:%f|h%s", prefix, aspect, Precision.round(value, 6), dimensionString(dimensions)));
     }
 
     /**
-     * Convenience method equivalent to {@link #recordHistogramValue(String, long, String[])}.
+     * Convenience method equivalent to {@link #recordHistogramValue(String, double, Map<String, String>)}.
      */
     @Override
-    public void histogram(String aspect, long value, String... tags) {
-        recordHistogramValue(aspect, value, tags);
+    public void histogram(String aspect, double value, Map<String, String> dimensions) {
+        recordHistogramValue(aspect, value, dimensions);
+    }
+
+    /**
+     * Records a value for the specified named histogram.
+     *
+     * <p>This method is non-blocking and is guaranteed not to throw an exception.</p>
+     *
+     * @param aspect
+     *     the name of the histogram
+     * @param value
+     *     the value to be incorporated in the histogram
+     * @param dimensions
+     *     map of dimensions to be added to the data
+     */
+    @Override
+    public void recordHistogramValue(String aspect, long value, Map<String, String> dimensions) {
+        send(String.format("%s%s:%d|h%s", prefix, aspect, value, dimensionString(dimensions)));
+    }
+
+    /**
+     * Convenience method equivalent to {@link #recordHistogramValue(String, long, Map<String, String>)}.
+     */
+    @Override
+    public void histogram(String aspect, long value, Map<String, String> dimensions) {
+        recordHistogramValue(aspect, value, dimensions);
     }
 
     private void send(String message) {
@@ -428,39 +358,19 @@ public final class NonBlockingStatsDClient implements StatsDClient {
                     if(null != message) {
                         byte[] data = message.getBytes();
                         if(sendBuffer.remaining() < (data.length + 1)) {
-                            blockingSend();
+                            blockingSend(sendBuffer);
                         }
                         if(sendBuffer.position() > 0) {
                             sendBuffer.put( (byte) '\n');
                         }
                         sendBuffer.put(data);
                         if(null == queue.peek()) {
-                            blockingSend();
+                            blockingSend(sendBuffer);
                         }
                     }
                 } catch (Exception e) {
                     handler.handle(e);
                 }
-            }
-        }
-
-        private void blockingSend() throws IOException {
-            int sizeOfBuffer = sendBuffer.position();
-            sendBuffer.flip();
-            int sentBytes = clientChannel.send(sendBuffer, address);
-            sendBuffer.limit(sendBuffer.capacity());
-            sendBuffer.rewind();
-
-            if (sizeOfBuffer != sentBytes) {
-                handler.handle(
-                        new IOException(
-                            String.format(
-                                "Could not send entirely stat %s to host %s:%d. Only sent %d bytes out of %d bytes",
-                                sendBuffer.toString(),
-                                address.getHostName(),
-                                address.getPort(),
-                                sentBytes,
-                                sizeOfBuffer)));
             }
         }
     }

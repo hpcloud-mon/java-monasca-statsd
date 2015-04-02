@@ -1,9 +1,10 @@
-java-dogstatsd-client [![Build Status](https://travis-ci.org/arnabk/java-dogstatsd-client.svg?branch=master)]
+java-monasca-statsd
 ==================
 
 A statsd client library implemented in Java.  Allows for Java applications to easily communicate with statsd.
 
-This version is forked from the upstream [java-statsd-client](https://github.com/indeedeng/java-dogstatsd-client) project, adding support for [DataDog](http://datadoghq.com/) events and blocking metrics for use with [dogstatsd](http://docs.datadoghq.com/guides/dogstatsd/).
+This version is forked from the upstream [java-statsd-client](https://github.com/indeedeng/java-dogstatsd-client) project,
+adding support for monasca dimensions
 
 Discuss the library [here](http://ranartech.com/techblog/?p=160)
 
